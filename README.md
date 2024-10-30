@@ -45,3 +45,5 @@ Things you may want to cover:
 -   create database $rails db:create, $rails db:migrate
 
 -   By default server will serve at 3000 port. http://127.0.0.1:3000
+
+* Note: If there will be the issue while running the $bundle install use $gem update --system 3.3.22
