@@ -1,0 +1,141 @@
+
+  <table class="table table-bordered table-striped">
+    <thead class="table-light">
+      <tr>
+        <th>Loan Amount</th>
+        <th>Interest Rate</th>
+        <th>Interest Amount</th>
+        <th>Status</th>
+        <th>Requested At</th>
+        <th>Payable Amount</th>
+        <th>Actions</th> 
+      </tr>
+    </thead>
+    <tbody id="loans-table-body1">
+      <% if @loans.any? %>
+        <% @loans.each do |loan| %>
+          <tr id="loan-<%= loan.id %>">
+            <td>₹<span class="loan-amount-<%=loan.id%>"><%= loan.amount %></span></td>
+            <td><%= loan.interest_rate %>%</td>
+            <td>₹<%= loan.calculate_interest %></td>
+            <td class="loan-status"><%= loan.status.humanize %></td>
+            <td><%= loan.indian_time_zone %></td>
+            <td>₹<span class="payable-amount-<%=loan.id%>"><%= loan.status == 'open' ?  payable_amount(loan) : 0.0 %></span></td>
+            <td>
+              <%= link_to 'View', loan_path(loan), class: 'btn btn-sm btn-secondary' %>
+              <% if loan.status == 'approved' %>
+                <button class="btn btn-sm btn-success accept-loan" data-loan-id="<%= loan.id %>">Accept</button>
+                <button class="btn btn-sm btn-danger reject-loan" data-loan-id="<%= loan.id %>">Reject</button>
+                <% elsif loan.status == 'waiting_for_adjustment_acceptance'  %>
+                <button class="btn btn-sm btn-success accept-loan" data-loan-id="<%= loan.id %>">Accept</button>
+                <button class="btn btn-sm btn-danger reject-loan" data-loan-id="<%= loan.id %>">Reject</button>
+                <button class="btn btn-sm btn-info readjust-loan" data-loan-id="<%= loan.id %>">Readjust Loan</button>
+                <% elsif loan.status == 'open' && (current_user.wallet_balance >= payable_amount(loan) )%>
+                <button class="btn btn-sm btn-warning repay-loan" data-loan-id="<%= loan.id %>">Repay Loan</button>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      <% else %>
+        <tr>
+          <td colspan="7" class="text-center">No Loan applied yet!</td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+
+<script>
+  $(document).ready(function() {
+    
+    const updateBalance = (loanId, transectionType) => {
+      const getElement = $('.account-balance')
+      const amount = Number(getElement.text())
+      const loanAmount = Number($(`.loan-amount-${loanId}`).text())  
+      const payable_amount = Number($(`.payable-amount-${loanId}`).text()) 
+      let finalAmount = (transectionType === 'repay') ? (amount - payable_amount) : (amount + loanAmount)
+      getElement.html(finalAmount.toFixed(2))
+    }
+
+
+    // Repay Loan
+    $('.repay-loan').click(function() {
+      const loanId = $(this).data('loan-id')
+      $.ajax({
+        url: `/loans/${loanId}/repay`,
+        type: 'PUT',
+        success: function(response){
+          updateBalance(loanId,'repay')
+          $(`#loan-${loanId} .loan-status`).text('Closed');
+          $(`#loan-${loanId} .repay-loan`).hide();
+          $(`.payable-amount-${loanId}`).html('0.0');
+          toastr.success(response.message);
+        },
+        error: function(xhr){
+          toastr.error('Error approving loan: ' + xhr.responseText);
+        }
+      })
+    })
+
+    // Accept Loan
+    $('.accept-loan').click(function() {
+      const loanId = $(this).data('loan-id');
+      const amount = $(`.loan-amount-${loanId}`).text()
+      $.ajax({
+        url: `/loans/${loanId}/accept`,
+        type: 'PUT',
+        success: function(response) {
+          $(`#loan-${loanId} .loan-status`).text('Open');
+          $(`#loan-${loanId} .accept-loan`).hide();
+          $(`#loan-${loanId} .reject-loan`).hide();
+          $(`#loan-${loanId} .readjust-loan`).hide();
+          $(`.payable-amount-${loanId}`).html(amount);
+          updateBalance(loanId)
+          toastr.success(response.message);
+        },
+        error: function(xhr) {
+          toastr.error('Error approving loan: ' + xhr.responseText);
+        }
+      });
+    });
+
+
+    // Reject loan
+    $('.reject-loan').click(function() {
+      const loanId = $(this).data('loan-id');
+      $.ajax({
+        url: `/loans/${loanId}/reject`,
+        type: 'PATCH',
+        success: function(response) {
+          $(`#loan-${loanId} .loan-status`).text('Rejected');
+          $(`#loan-${loanId} .accept-loan`).hide();
+          $(`#loan-${loanId} .reject-loan`).hide();
+          $(`#loan-${loanId} .readjust-loan`).hide();
+          toastr.success(response.message);
+        },
+        error: function(xhr) {
+          toastr.error('Error rejecting loan: ' + xhr.responseText);
+        }
+      });
+    });
+
+    // Readjust Loan
+    $('.readjust-loan').click(function() {
+      const loanId = $(this).data('loan-id');
+      $.ajax({
+        url: `/loans/${loanId}/readjust`,
+        type: 'PATCH',
+        success: function(response) {
+          $(`#loan-${loanId} .loan-status`).text('Readjustment Requested');
+          $(`#loan-${loanId} .accept-loan`).hide();
+          $(`#loan-${loanId} .reject-loan`).hide();
+          $(`#loan-${loanId} .readjust-loan`).hide();
+          toastr.success(response.message);
+        },
+        error: function(xhr) {
+          toastr.error('Error readjusting loan: ' + xhr.responseText);
+        }
+      });
+    });
+  });
+</script>

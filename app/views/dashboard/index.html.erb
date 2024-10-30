@@ -1,0 +1,46 @@
+
+<div class="container mt-5">
+  <div class="d-flex flex-column align-items-center mb-5">
+    <% if current_user.is_admin? %>
+      <div class="mb-3">
+        <h1 class="text-center">Admin Panel</h1>
+      </div>
+    <% end %>
+    
+    <div>
+      <h2 class="text-center mb-4">Welcome, <%= current_user.email %></h2>
+    </div>
+  </div>
+
+  <h3 class="mb-4">Your Wallet Balance: 
+    <span class="<%= current_user.wallet_balance.negative? ? 'text-danger' : 'text-success' %>">
+      ₹<span class="account-balance"><%= current_user.wallet_balance %></span>
+    </span>
+  </h3>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>Your Loan List</h3>
+    <% unless current_user.is_admin? %>
+      <%= link_to 'Request a New Loan', new_loan_path, class: 'btn btn-primary' %>
+    <% end %>
+  </div>
+
+
+  <div class="btn-group mb-4" role="group" aria-label="Filter Loans">
+    <%= link_to 'All', dashboard_filter_path(status: 'all'), class: "btn btn-outline-primary filter-loans" %>
+    <%= link_to 'Requested', dashboard_filter_path(status: 'requested'), class: "btn btn-outline-warning filter-loans" %>
+    <%= link_to 'Approved', dashboard_filter_path(status: 'approved'), class: "btn btn-outline-secondary filter-loans" %>
+    <%= link_to 'Rejected', dashboard_filter_path(status: 'rejected'), class: "btn btn-outline-danger filter-loans" %>
+    <%= link_to 'Waiting for adjustment acceptance', dashboard_filter_path(status: 'waiting_for_adjustment_acceptance'), class: "btn btn-outline-primary filter-loans"  %>
+    <%= link_to 'Readjustment Requested', dashboard_filter_path(status: 'readjustment_requested'), class: "btn btn-outline-info filter-loans"  %>
+    <%= link_to 'Open', dashboard_filter_path(status: 'open'), class: "btn btn-outline-primary filter-loans" %>
+    <%= link_to 'Closed', dashboard_filter_path(status: 'closed'), class: "btn btn-outline-secondary filter-loans" %>
+  </div>
+
+  <% if current_user.is_admin? %>
+    <%= render partial: 'admin_dashboard'%>
+  <% else %>
+    <%= render partial: 'user_dashboard' %>
+  <% end %>
+
+</div>

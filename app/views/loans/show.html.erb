@@ -1,0 +1,94 @@
+<h1 class="mb-4">Loan Details</h1>
+
+<div class="card mb-3 shadow-lg">
+  <div class="card-header bg-info text-white">
+    <strong>Loan ID:</strong> <%= @loan.id %>
+  </div>
+  <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <div class="card mb-2 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">Loan Amount</h5>
+              <p class="card-text">₹<%= @loan.amount %></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card mb-2 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">Interest Rate</h5>
+              <p class="card-text"><%= @loan.interest_rate %>%</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card mb-2 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">Interest Amount</h5>
+              <p class="card-text">₹<%= @loan.calculate_interest %></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <div class="card mb-2 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">Status</h5>
+              <p class="card-text loan-status"><%= @loan.status.humanize %></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card mb-2 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">Requested At</h5>
+              <p class="card-text"><%= @loan.indian_time_zone %></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card mb-2 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">Payable Amount</h5>
+              <p class="card-text">₹<%= @loan.status == 'open' ?  payable_amount(@loan) : 0.0 %></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    <div><h3> Loan Adjustment history</h3></div>
+      <table class="table table-bordered table-striped">
+      <thead class="table-light">
+        <tr>
+          <th>Loan Amount</th>
+          <th>Interest Rate</th>
+          <th>Adjusted Loan Amount </th>
+          <th>Adjusted Interest Rate</th>
+        </tr>
+      </thead>
+      <tbody id="loans-table-body1">
+        <% if @adjustment_history.any? %>
+          <% @adjustment_history.each do |history| %>
+            <tr>
+              <td>₹<%= history.loan_amount %></span></td>
+              <td><%= history.loan_rate %>%</td>
+              <td>₹<%= history.adjusted_amount %></td>
+              <td><%= history.adjusted_rate %>%</td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="4" class="text-center">No adjustment history found for this loan!</td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="d-flex justify-content-end">
+  <%= link_to 'Back to Loans', dashboard_path, class: 'btn btn-secondary' %>
+</div>
+

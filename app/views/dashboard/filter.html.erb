@@ -1,0 +1,56 @@
+<div class="d-flex flex-column align-items-center mb-5">
+  <% if current_user.is_admin? %>
+    <div class="mb-3">
+      <h1 class="text-center">Admin Panel</h1>
+    </div>
+  <% end %>
+  
+  <div>
+    <h2 class="text-center mb-4">Welcome, <%= current_user.email %></h2>
+  </div>
+</div>
+
+<h2 class="mb-4">Your Wallet Balance: 
+<span class="<%= current_user.wallet_balance.negative? ? 'text-danger' : 'text-success' %>">
+    ₹<span class="account-balance"><%= current_user.wallet_balance %></span>
+</span>
+</h2>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Loans with "<%= @status%>" status</h3>
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+      <tr>
+        <th>Loan Amount</th>
+        <th>Interest Rate</th>
+        <th>Interest Amount</th>
+        <th>Status</th>
+        <th>Requested At</th>
+        <th>Payable Amount</th>
+      </tr>
+    </thead>
+    <tbody id="loans-table-body1">
+      <% if @loans.any? %>
+        <% @loans.each do |loan| %>
+          <tr id="loan-<%= loan.id %>">
+            <td>₹<span class="loan-amount-<%=loan.id%>"><%= loan.amount %></span></td>
+            <td><%= loan.interest_rate %>%</td>
+            <td>₹<%= loan.calculate_interest %></td>
+            <td class="loan-status"><%= loan.status.humanize %></td>
+            <td><%= loan.created_at.strftime('%Y-%m-%d %H:%M') %></td>
+            <td>₹<span class="payable-amount-<%=loan.id%>"><%= loan.status == 'open' ?  payable_amount(loan) : 0.0 %></span></td>
+          </tr>
+        <% end %>
+      <% else %>
+        <tr>
+          <td colspan="6" class="text-center">No Loan found!</td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <div class="d-flex justify-content-end">
+  <%= link_to 'Back to dashboard', dashboard_path, class: 'btn btn-warning' %>
+</div>

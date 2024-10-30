@@ -1,0 +1,16 @@
+
+<% loans.each do |loan| %>
+  <tr id="loan-<%= loan.id %>">
+    <td>₹<%= loan.amount %></td>
+    <td><%= loan.interest_rate %>%</td>
+    <td class="status"><%= loan.status.humanize %></td>
+    <td><%= loan.created_at.strftime('%Y-%m-%d %H:%M') %></td>
+    <td>
+      <% if current_user.is_admin && (loan.status == 'requested' || loan.status == 'readjustment_requested') %>
+        <button class="btn btn-sm btn-success approve-loan" data-loan-id="<%= loan.id %>">Approve</button>
+        <button class="btn btn-sm btn-danger reject-loan" data-loan-id="<%= loan.id %>">Reject</button>
+        <%= link_to 'Adjust', edit_loan_path(loan), class: 'btn btn-sm btn-warning adjust-loan' %>
+      <% end %>
+    </td>
+  </tr>
+<% end %>

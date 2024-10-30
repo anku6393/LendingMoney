@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>LendingMoney</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload" %>
+    
+    <%= javascript_importmap_tags %>
+  
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+     <%= stylesheet_link_tag "https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css", media: "all", "data-turbo-track": "reload" %>
+     <%= javascript_include_tag "https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js", "data-turbo-track": "reload" %>
+  </head>
+
+  <body>
+  <div class="container-fluid">
+    
+    <% if user_signed_in? %>
+      <div class="d-flex justify-content-between p-3 bg-light border-bottom">
+        <div><h4> Lending Money </h4></div>
+        <div>
+          <%= form_for :logout, url: destroy_user_session_path, method: :delete, html: { class: 'd-inline' } do %>
+            <%= submit_tag 'Logout', class: 'btn btn-danger' %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <div id="flash-messages">
+        <% flash.each do |key, message| %>
+            <div class="alert alert-<%= key == 'notice' ? 'success' : 'danger' %>">
+              <%= message %>
+            </div>
+          <% end %>
+      </div>
+
+      <main class="container mt-4">
+        <%= yield %>
+      </main>
+
+    </div>
+  </body>
+</html>
+
+<script>
+  $(document).ready(function() {
+
+    const csrfToken = $('meta[name="csrf-token"]').attr('content');
+    $.ajaxSetup({
+      headers: {
+        'X-CSRF-Token': csrfToken
+      }
+    });
+
+    const flashMessages = $("#flash-messages");
+    if (flashMessages.length) {
+      setTimeout(function() {
+        flashMessages.hide();
+      }, 3000);
+    }
+
+  });
+
+toastr.options = {
+    "closeButton": true,
+    "debug": false,
+    "newestOnTop": true,
+    "progressBar": true,
+    "positionClass": "toast-top-right",
+    "preventDuplicates": false,
+    "onclick": null,
+    "showDuration": "300",
+    "hideDuration": "1000",
+    "timeOut": "5000",
+    "extendedTimeOut": "1000",
+    "showEasing": "swing",
+    "hideEasing": "linear",
+    "showMethod": "fadeIn",
+    "hideMethod": "fadeOut"
+  };
+
+
+</script>
